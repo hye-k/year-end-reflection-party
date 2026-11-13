@@ -52,13 +52,13 @@ What was built (status as of 2026-11-14): the site is **deployed and live, frien
 
 ## Working notes
 - Reply to the user in Korean, plain-language explanation first, no code unless asked. Do not commit or push unless asked.
-- Browser testing used the Claude-in-Chrome tools against `npx vite --port 5174`. The window cannot go below ~960 px wide, so phone layouts are tested through a temporary iframe page in `app/public/` (remove it afterwards). Seed state through localStorage (`ydp:v1:*`). Real-device behaviour was never verified.
+- Browser testing used the Claude-in-Chrome tools against `npx vite --port 5174`. The window cannot go below ~960 px wide, so phone layouts are tested through a temporary iframe page in `app/public/` (remove it afterwards). Seed state through localStorage (`ydp:v1:*`). The user has checked real devices (iPhone, iPad) and the deployed submit flow; they work.
 - Match the style of the file being edited (`core/mandala.ts` uses double quotes and semicolons, the rest does not).
 
 ## Open items / known leftovers
 - **Live data warning**: friends' answers are in the sheet now. Do not rename or reorder quest ids, slot counts or the column layout (`core/serialize.ts` headers), and do not reset tabs, without first migrating the existing rows. A site redeploy is safe; an Apps Script change must go out as a new version of the same deployment.
-- Verify on real devices: iPhone and landscape iPad (viewport changes, keyboard overlap, tour cards), and the deployed site's submit flow end to end into the sheet.
 - `app/public/favicon.svg` is still the Vite template logo; replace it with an app icon.
-- The `names`-tab version of `Code.gs` was handed over on 2026-11-14 and the user reported it working; if the name list ever fails to load on the live site, check that the `names` tab exists and the deployed Apps Script version is the latest.
-- Not done: i18n steps 2–3 (move UI strings into keys, add `en.json`), the bingo form.
+- The `names`-tab version of `Code.gs` is deployed and confirmed working by the user (2026-11-14); if the name list ever fails to load on the live site, check that the `names` tab exists and the deployed Apps Script version is the latest.
+- Not done: i18n steps 2–3 (move UI strings into keys, add `en.json`).
+- Decided against: the bingo form. The mandala replaces it for good.
 - Abandoned: background music from the user's own dive video (loops were prepared, the idea was dropped on 2026-11-13).
