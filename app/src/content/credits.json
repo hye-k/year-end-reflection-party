@@ -1,0 +1,22 @@
+{
+  "title": "2026 DIVE LOG",
+  "sections": [
+    {
+      "heading": "STARRING",
+      "lines": ["올해도 숨 참고 버틴", "우리 모두"]
+    },
+    {
+      "heading": "SPECIAL THANKS",
+      "lines": ["다이빙을 다시 좋아하게 해준 친구들", "혼자였다면 못했을 경험들을 함께 해준 친구들", "같이 웃고 떠들어준 친구들", "끝까지 답해준 당신"]
+    },
+    {
+      "heading": "ASSETS",
+      "lines": ["Sprites: Szym", "Font: Galmuri · Pretendard", "Palette: Apollo"]
+    },
+    {
+      "heading": "PRESENTED BY",
+      "lines": ["친구들을 사랑하는 마음을 담아", "차철민"]
+    }
+  ],
+  "footer": "SEE YOU AT THE PARTY"
+}

@@ -1,0 +1,471 @@
+@import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
+
+@font-face {
+  font-family: 'Galmuri11 Bold';
+  src: url('../assets/fonts/Galmuri11-Bold.woff2') format('woff2');
+  font-display: block;
+}
+
+:root {
+  --ink: #090a14;
+  --navy: #253a5e;
+  --gold: #e8c170;
+  --orange: #da863e;
+  --stage: #73bed3;
+  --panel: #c8e5e2;
+  --panel-deep: #a4dddb;
+  --field: #ebede9;
+  --bonus: #4f8fba;
+  --paper: #f6eed6;
+  --paper-line: #d9c9a1;
+  --px: 4px;
+  --font-head: 'Galmuri11 Bold', 'Pretendard Variable', sans-serif;
+  --font-body: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  overscroll-behavior: none;
+}
+
+a {
+  color: inherit;
+}
+
+.px-notch {
+  box-shadow:
+    0 -6px 0 0 var(--ink), 0 6px 0 0 var(--ink),
+    -6px 0 0 0 var(--ink), 6px 0 0 0 var(--ink),
+    0 14px 0 0 rgba(9, 10, 20, 0.45);
+}
+
+.px-notch-thin {
+  box-shadow:
+    0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink),
+    -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink);
+}
+
+.px-notch-btn {
+  box-shadow:
+    0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink),
+    -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink),
+    0 8px 0 0 var(--ink);
+}
+
+.px-sprite {
+  position: absolute;
+  image-rendering: pixelated;
+  background-repeat: no-repeat;
+}
+
+.stage-viewport {
+  position: fixed;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  background: var(--ink);
+}
+
+/* Centred by its own offsets rather than by a grid: a 1280px box inside a narrower grid track
+   starts at the left edge, and scaling it about its centre then shifts it off-screen. */
+.stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1280px;
+  height: 760px;
+  margin: -380px 0 0 -640px;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-size: 16px;
+  transform-origin: center center;
+}
+
+.panel {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.plate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 14px 14px 16px;
+  background: var(--panel);
+}
+
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0;
+  background: var(--gold);
+  color: var(--ink);
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-gold:disabled {
+  background: #819796;
+  color: #394a50;
+  cursor: not-allowed;
+}
+
+.field {
+  box-sizing: border-box;
+  border: 4px solid var(--ink);
+  border-radius: 0;
+  background: var(--field);
+  color: var(--ink);
+  font-family: inherit;
+  outline: none;
+}
+
+/* Letter paper: the ruled lines are drawn by the textarea itself so they scroll with the text.
+   --line is the textarea's line height, so every line of text sits on a rule. */
+.letter {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  border: 4px solid var(--ink);
+  background: var(--paper);
+}
+
+.letter:focus-within {
+  box-shadow: 0 0 0 4px var(--gold);
+}
+
+.letter-body {
+  box-sizing: border-box;
+  width: 100%;
+  border: 0;
+  outline: none;
+  color: var(--ink);
+  font-family: inherit;
+  line-height: var(--line);
+  background-color: transparent;
+  background-image: repeating-linear-gradient(to bottom, transparent 0 calc(var(--line) - 2px), var(--paper-line) calc(var(--line) - 2px) var(--line));
+  background-attachment: local;
+}
+
+.field-select {
+  appearance: none;
+  padding-right: 52px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 4' shape-rendering='crispEdges'%3E%3Cpath fill='%23090a14' d='M0 0h8v1H7v1H6v1H5v1H3V3H2V2H1V1H0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 18px center;
+  background-size: 20px 10px;
+}
+
+.field:focus-visible {
+  box-shadow: 0 0 0 4px var(--gold);
+}
+
+.link-btn {
+  align-self: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--navy);
+  font-family: inherit;
+  font-size: 16px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.link-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.mobile-shell {
+  position: fixed;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.mobile-scene {
+  position: fixed;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.gauge-dot {
+  cursor: pointer;
+}
+
+.gauge-dot:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: -2px;
+}
+
+.mandala-cell {
+  position: relative;
+  overflow: hidden;
+  color: var(--ink);
+}
+
+.mandala-cell:focus-within {
+  box-shadow: 0 0 0 3px var(--gold);
+  z-index: 1;
+}
+
+.mandala-cell textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  padding-left: 2px;
+  padding-right: 2px;
+  padding-bottom: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: 16px;
+  text-align: center;
+  resize: none;
+  overflow: hidden;
+  outline: none;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+h1,
+.btn-gold,
+.label,
+.display {
+  font-family: var(--font-head);
+  font-weight: 400;
+}
+
+.panel-text {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.label {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+@keyframes sprite-x {
+  from { background-position-x: var(--x0); }
+  to { background-position-x: calc(var(--x0) - var(--span)); }
+}
+
+@keyframes sprite-y {
+  from { background-position-y: var(--y0); }
+  to { background-position-y: calc(var(--y0) - var(--span)); }
+}
+
+@keyframes bob {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(var(--dist) * -1)); }
+}
+
+@keyframes drift {
+  0% { transform: translateX(0) scaleX(1); }
+  49.9% { transform: translateX(calc(var(--dist) * -1)) scaleX(1); }
+  50% { transform: translateX(calc(var(--dist) * -1)) scaleX(-1); }
+  99.9% { transform: translateX(0) scaleX(-1); }
+  100% { transform: translateX(0) scaleX(1); }
+}
+
+@keyframes drift-r {
+  0% { transform: translateX(0) scaleX(1); }
+  49.9% { transform: translateX(var(--dist)) scaleX(1); }
+  50% { transform: translateX(var(--dist)) scaleX(-1); }
+  99.9% { transform: translateX(0) scaleX(-1); }
+  100% { transform: translateX(0) scaleX(1); }
+}
+
+@keyframes rise {
+  0% { transform: translateY(0); opacity: 0; }
+  15% { opacity: 0.85; }
+  85% { opacity: 0.85; }
+  100% { transform: translateY(calc(var(--dist) * -1)); opacity: 0; }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+@keyframes foam {
+  from { background-position-x: 0; }
+  to { background-position-x: var(--shift); }
+}
+
+@keyframes sheet-in {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.mandala-sheet {
+  animation: sheet-in 180ms steps(4, end);
+}
+
+@keyframes quest-in-fwd {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes quest-in-back {
+  from { transform: translateY(-40px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.quest-swap-fwd { animation: quest-in-fwd 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.quest-swap-back { animation: quest-in-back 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+.scroll-mouse {
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 24px;
+  height: 36px;
+  padding-top: 6px;
+  border: 4px solid var(--ink);
+  background: var(--field);
+}
+
+.scroll-mouse-dot {
+  width: 4px;
+  height: 8px;
+  background: var(--ink);
+  animation: scroll-dot 1.2s steps(3, end) infinite;
+}
+
+@keyframes scroll-dot {
+  from { transform: translateY(0); }
+  to { transform: translateY(8px); }
+}
+
+/* Confetti: .confetti-fall drops, .confetti-sway drifts sideways and spins. */
+.confetti {
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.confetti-fall {
+  position: absolute;
+  top: 0;
+  animation: confetti-fall linear both;
+}
+
+.confetti-sway {
+  display: block;
+  animation:
+    confetti-sway ease-in-out infinite alternate,
+    confetti-spin linear infinite;
+}
+
+@keyframes confetti-fall {
+  from { top: -4%; opacity: 1; }
+  80% { opacity: 1; }
+  to { top: 104%; opacity: 0; }
+}
+
+@keyframes confetti-sway {
+  from { translate: calc(var(--sway) * -1) 0; }
+  to { translate: var(--sway) 0; }
+}
+
+@keyframes confetti-spin {
+  from { rotate: 0deg; }
+  to { rotate: 360deg; }
+}
+
+/* Credits: the box is a size container so the roll can start exactly one box-height down (100cqh). */
+.credits {
+  box-sizing: border-box;
+  container-type: size;
+  overflow: hidden;
+  border: 4px solid var(--gold);
+  background: var(--ink);
+  color: var(--field);
+  text-align: center;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%);
+}
+
+.credits-roll {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 100cqh 16px;
+  font-size: 18px;
+  line-height: 1.6;
+  animation: credits-roll linear infinite;
+}
+
+.credits-title {
+  color: var(--gold);
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+.credits-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.credits-heading {
+  margin-bottom: 6px;
+  color: var(--gold);
+  font-size: 14px;
+  letter-spacing: 0.12em;
+}
+
+.credits-footer {
+  margin-top: 8px;
+}
+
+@keyframes credits-roll {
+  from { transform: translateY(0); }
+  to { transform: translateY(-100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No motion: show the credits as a plain scrollable list. */
+  .credits {
+    overflow-y: auto;
+    mask-image: none;
+  }
+
+  .credits-roll {
+    padding-block: 20px;
+  }
+
+  .confetti {
+    display: none;
+  }
+
+  * {
+    animation: none !important;
+  }
+}

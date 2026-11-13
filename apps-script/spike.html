@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apps Script 통신 시험</title>
+<style>
+body{font:16px/1.5 system-ui,sans-serif;margin:0;padding:16px;max-width:720px}
+input,select,button{font:inherit;padding:8px;margin:4px 0;width:100%;box-sizing:border-box}
+button{width:auto;margin-right:6px}
+pre{background:#f3f3f3;padding:12px;overflow:auto;white-space:pre-wrap;word-break:break-all}
+</style>
+</head>
+<body>
+<h1>Apps Script 통신 시험</h1>
+<p>origin: <code id="origin"></code></p>
+<label>Web App URL (…/exec)<input id="url" placeholder="https://script.google.com/macros/s/…/exec"></label>
+<label>이름<select id="name"></select></label>
+<div>
+<button data-t="ping">1 ping (GET)</button>
+<button data-t="names">2 이름 목록 (GET)</button>
+<button data-t="write">3 시트에 한 줄 쓰기 (POST)</button>
+<button data-t="save">4 임시저장 (POST)</button>
+<button data-t="load">5 임시저장 읽기 (GET)</button>
+<button data-t="bad">6 잘못된 이름 (거부돼야 함)</button>
+</div>
+<pre id="log"></pre>
+<script>
+const $ = (id) => document.getElementById(id);
+$('origin').textContent = location.origin;
+$('url').value = localStorage.getItem('spikeUrl') || '';
+const log = (s) => { $('log').textContent = s + '\n\n' + $('log').textContent; };
+
+async function call(method, params, body) {
+  const base = $('url').value.trim();
+  localStorage.setItem('spikeUrl', base);
+  const t0 = performance.now();
+  const url = method === 'GET' ? base + '?' + new URLSearchParams(params) : base;
+  const init = method === 'GET' ? {} : { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) };
+  try {
+    const res = await fetch(url, init);
+    const text = await res.text();
+    return `${method} ${params ? params.action : body.action}: HTTP ${res.status} (${Math.round(performance.now() - t0)}ms)\n${text.slice(0, 600)}`;
+  } catch (e) {
+    return `${method} ${params ? params.action : body.action}: FETCH FAILED (${Math.round(performance.now() - t0)}ms)\n${e}`;
+  }
+}
+
+const name = () => $('name').value;
+const tests = {
+  ping: () => call('GET', { action: 'ping' }),
+  names: () => call('GET', { action: 'names' }),
+  write: () => call('POST', null, { action: 'submit', form: 'spike', name: name(), header: ['timestamp', 'name', 'note'], row: [new Date().toISOString(), name(), '=1+1 시험 (수식 방어 확인)'] }),
+  save: () => call('POST', null, { action: 'saveDraft', form: 'spike', name: name(), savedAt: new Date().toISOString(), json: JSON.stringify({ hello: '임시저장', at: Date.now() }) }),
+  load: () => call('GET', { action: 'draft', form: 'spike', name: name() }),
+  bad: () => call('POST', null, { action: 'submit', form: 'spike', name: '없는 사람', header: ['a'], row: ['x'] }),
+};
+document.querySelectorAll('button').forEach((b) => b.addEventListener('click', async () => log(await tests[b.dataset.t]())));
+
+['이름 1','이름 2','이름 3','이름 4','이름 5','이름 6','이름 7','이름 8'].forEach((n) => $('name').add(new Option(n, n)));
+</script>
+</body>
+</html>
