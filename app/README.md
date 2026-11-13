@@ -18,7 +18,7 @@ npm test        # 단위 테스트
 
 ## 서버
 
-`apps-script/Code.gs`를 Google 시트에 연결한 Apps Script에 붙여 넣고 웹 앱으로 배포합니다. `NAMES`에 참여자 이름을 적습니다.
+`apps-script/Code.gs`를 Google 시트에 연결한 Apps Script에 붙여 넣고 웹 앱으로 배포합니다. 시트에 `names` 탭을 만들고(A1은 제목, A2부터 한 줄에 이름 하나) 참여자 이름을 적습니다. 이름은 시트에서만 관리하므로 바꿀 때 재배포가 필요 없습니다.
 
 ## 배포
 

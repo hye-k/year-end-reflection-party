@@ -1,5 +1,7 @@
-const NAMES = ['player 1', 'player 2', 'player 3', 'player 4'];
-const FORMS = ['reflection', 'mandala', 'spike'];
+// The player list is not in the code: it is the `names` tab of the sheet (one name per row in column A, header in row 1).
+// Add or remove rows there to change who can write; no redeploy needed. Do not rename a player, records are keyed by name.
+const NAMES_SHEET = 'names';
+const FORMS = ['reflection', 'mandala'];
 const DRAFT_SHEET = 'drafts';
 const DRAFT_HEADER = ['key', 'name', 'form', 'savedAt', 'json'];
 const MAX_CELL_CHARS = 2000;
@@ -11,7 +13,7 @@ function doGet(e) {
   try {
     switch (p.action) {
       case 'ping': return json({ ok: true, serverTime: new Date().toISOString() });
-      case 'names': return json({ ok: true, names: NAMES });
+      case 'names': return json({ ok: true, names: readNames() });
       case 'draft': return json(readDraft(requireName(p.name), requireForm(p.form)));
       default: return json({ ok: false, error: 'unknown action' });
     }
@@ -38,8 +40,22 @@ function json(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 
+function readNames() {
+  const sheet = SpreadsheetApp.getActive().getSheetByName(NAMES_SHEET);
+  if (!sheet) throw new Error('names tab missing');
+  if (sheet.getLastRow() < 2) return [];
+  const seen = {};
+  return sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues()
+    .map(function (row) { return String(row[0]).trim(); })
+    .filter(function (name) {
+      if (!name || seen[name]) return false;
+      seen[name] = true;
+      return true;
+    });
+}
+
 function requireName(name) {
-  if (NAMES.indexOf(name) < 0) throw new Error('unknown name');
+  if (readNames().indexOf(name) < 0) throw new Error('unknown name');
   return name;
 }
 
