@@ -16,5 +16,5 @@ git -C "$work" init -q -b gh-pages
 git -C "$work" add -A
 git -C "$work" commit -q -m "Deploy $(date -u +%Y-%m-%dT%H:%MZ)"
 # The branch only holds build output, so each deploy replaces it.
-git -C "$work" push -q --force "$remote" gh-pages
+git -C "$work" -c http.postBuffer=157286400 push -q --force "$remote" gh-pages
 echo "Published to gh-pages. Pages serves it from the site address in VITE_SITE_URL."
