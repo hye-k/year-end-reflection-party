@@ -1,3 +1,4 @@
+import { EVENTS_HEADER, eventRow, type TrackEvent } from '../core/events'
 import { parseDraftJson, type Draft, type FormId } from '../core/serialize'
 import { APPS_SCRIPT_URL } from './config'
 
@@ -69,7 +70,7 @@ export function createApi(options: ApiOptions = {}) {
     return request((base) => [`${base}?${new URLSearchParams(params).toString()}`, {}], timeoutMs)
   }
 
-  function post(payload: JsonRecord, timeoutMs: number) {
+  function post(payload: JsonRecord, timeoutMs: number, extra: RequestInit = {}) {
     return request(
       (base) => [
         base,
@@ -77,6 +78,7 @@ export function createApi(options: ApiOptions = {}) {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload),
+          ...extra,
         },
       ],
       timeoutMs,
@@ -126,7 +128,16 @@ export function createApi(options: ApiOptions = {}) {
     return result.ok ? { ok: true } : result
   }
 
-  return { fetchNames, fetchRemoteDraft, saveRemoteDraft, deleteRemoteDraft, submitForm }
+  async function logEvents(name: string, events: TrackEvent[]): Promise<ApiResult> {
+    const result = await post(
+      { action: 'logEvents', name, header: EVENTS_HEADER, rows: events.map(eventRow) },
+      readTimeoutMs,
+      { keepalive: true },
+    )
+    return result.ok ? { ok: true } : result
+  }
+
+  return { fetchNames, fetchRemoteDraft, saveRemoteDraft, deleteRemoteDraft, submitForm, logEvents }
 }
 
-export const { fetchNames, fetchRemoteDraft, saveRemoteDraft, deleteRemoteDraft, submitForm } = createApi()
+export const { fetchNames, fetchRemoteDraft, saveRemoteDraft, deleteRemoteDraft, submitForm, logEvents } = createApi()

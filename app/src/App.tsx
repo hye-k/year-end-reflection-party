@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { REFLECTION_QUESTS } from './core/content'
 import { emptyMandala, mandalaProgress, setValueAt } from './core/mandala'
-import { emptyReflection, gaugeStates, setAnswer, skipQuest, validateSubmit, type Answer } from './core/reflection'
-import { MANDALA_HEADER, REFLECTION_HEADER, mandalaRow, reflectionRow, restoreMandalaState, restoreReflectionState } from './core/serialize'
+import { mandalaTally, reflectionTally, type EventKind, type Tally } from './core/events'
+import { emptyReflection, gaugeStates, isQuestAnswered, setAnswer, skipQuest, validateSubmit, type Answer } from './core/reflection'
+import { MANDALA_HEADER, REFLECTION_HEADER, mandalaRow, reflectionRow, restoreMandalaState, restoreReflectionState, type FormId } from './core/serialize'
 import { fetchNames } from './data/api'
+import { recordEvent } from './data/eventLog'
 import { loadLastName, loadLastStep, saveLastName, saveLastStep } from './data/localDrafts'
 import { useFormDraft } from './data/useFormDraft'
 import { ClearScreen } from './screens/ClearScreen'
@@ -18,6 +20,15 @@ type Screen = 'title' | 'quest' | 'clear' | 'mandala' | 'done'
 
 const DEV_NAMES = ['이름 1', '이름 2', '이름 3', '이름 4', '이름 5', '이름 6', '이름 7', '이름 8']
 const LAST = REFLECTION_QUESTS.length - 1
+
+// Usage logging is best effort: a failure here must never break navigation or rendering.
+function track(event: EventKind, name: string, form: FormId, tally: () => Tally, quest = '') {
+  try {
+    recordEvent(event, name, form, tally(), quest)
+  } catch {
+    // ignored on purpose
+  }
+}
 const RESUMABLE: Screen[] = ['quest', 'clear', 'mandala']
 
 // Picks up where this browser left off, but only for the same person.
@@ -62,6 +73,7 @@ export default function App() {
     restore: restoreReflectionState,
     header: REFLECTION_HEADER,
     toRow: reflectionRow,
+    progress: reflectionTally,
   })
   const mandala = useFormDraft({
     form: 'mandala',
@@ -70,11 +82,33 @@ export default function App() {
     restore: restoreMandalaState,
     header: MANDALA_HEADER,
     toRow: mandalaRow,
+    progress: mandalaTally,
   })
 
   const validation = useMemo(() => validateSubmit(reflection.state), [reflection.state])
   const unanswered = useMemo(() => new Set([...validation.missingRequired, ...validation.skipped]), [validation])
   const firstUnanswered = () => REFLECTION_QUESTS.findIndex((q) => unanswered.has(q.id))
+
+  // Read inside effects without re-running them on every keystroke.
+  const latest = useRef({ reflection: reflection.state, mandala: mandala.state })
+  useEffect(() => {
+    latest.current = { reflection: reflection.state, mandala: mandala.state }
+  })
+
+  // `ready` gates both: before it, the state is still the empty one and the tally would read zero.
+  useEffect(() => {
+    if (screen === 'quest' && reflection.ready) {
+      track('open', name, 'reflection', () => reflectionTally(latest.current.reflection))
+    }
+    if (screen === 'mandala' && mandala.ready) {
+      track('open', name, 'mandala', () => mandalaTally(latest.current.mandala))
+    }
+  }, [screen, reflection.ready, mandala.ready, name])
+
+  useEffect(() => {
+    if (screen !== 'quest' || !reflection.ready) return
+    track('quest_enter', name, 'reflection', () => reflectionTally(latest.current.reflection), REFLECTION_QUESTS[index].id)
+  }, [screen, index, reflection.ready, name])
 
   const start = () => {
     saveLastName(name)
@@ -95,6 +129,9 @@ export default function App() {
     const quest = REFLECTION_QUESTS[index]
     const go = (to: number) => {
       if (to === index) return
+      if (!isQuestAnswered(reflection.state, quest) && !reflection.state.skipped.includes(quest.id)) {
+        track('skip', name, 'reflection', () => reflectionTally(reflection.state), quest.id)
+      }
       reflection.update((prev) => skipQuest(prev, quest.id))
       setIndex(Math.min(LAST, Math.max(0, to)))
     }

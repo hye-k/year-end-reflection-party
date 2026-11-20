@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { Tally } from '../core/events'
 import { createDraft, type Draft, type FormId } from '../core/serialize'
 import { fetchRemoteDraft, saveRemoteDraft, submitForm } from './api'
+import { flushEvents, recordEvent } from './eventLog'
 import { loadLocalDraft, saveLocalDraft } from './localDrafts'
 import {
   createDebouncer,
@@ -20,6 +22,7 @@ export interface UseFormDraftOptions<S> {
   restore: (data: unknown) => S
   header: string[]
   toRow: (state: S, name: string, now: Date) => string[]
+  progress: (state: S) => Tally
 }
 
 export interface UseFormDraftResult<S> {
@@ -73,6 +76,15 @@ function freshStore<S>(key: string | null, state: S): Store<S> {
     serverStatus: 'idle',
     serverSavedAt: null,
     submitStatus: 'idle',
+  }
+}
+
+// Usage logging is best effort and must never break saving or submitting.
+function logEvent<S>(event: 'save' | 'submit', session: Session, options: UseFormDraftOptions<S>, state: S, now: Date) {
+  try {
+    recordEvent(event, session.name, session.form, options.progress(state), '', now)
+  } catch {
+    // ignored on purpose
   }
 }
 
@@ -142,6 +154,7 @@ export function useFormDraft<S>(options: UseFormDraftOptions<S>): UseFormDraftRe
       flush()
       // Best effort: the tab may be about to close, so do not wait for the next autosave.
       if (session.serverDirty) void saveToServerRef.current()
+      void flushEvents(name)
     }
     document.addEventListener('visibilitychange', onVisibility)
     window.addEventListener('pagehide', flush)
@@ -182,6 +195,8 @@ export function useFormDraft<S>(options: UseFormDraftOptions<S>): UseFormDraftRe
       notify({ serverStatus: 'saving', ...(savedLocally ? { localSavedAt: draft.savedAt } : {}) })
       const result = await saveRemoteDraft(draft)
       notify(result.ok ? { serverStatus: 'saved', serverSavedAt: draft.savedAt } : { serverStatus: 'error' })
+      if (result.ok) logEvent('save', session, optionsRef.current, stateRef.current as S, new Date(draft.savedAt))
+      void flushEvents(session.name)
       // A failure keeps the edits marked unsaved, but only the next edit (or the save button) tries again:
       // an idle tab left open offline must not keep calling the server.
       if (!result.ok) session.serverDirty = true
@@ -222,6 +237,8 @@ export function useFormDraft<S>(options: UseFormDraftOptions<S>): UseFormDraftRe
       const draft = createDraft(session.form, session.name, stateRef.current, new Date())
       saveLocalDraft(draft)
       void saveRemoteDraft(draft)
+      logEvent('submit', session, optionsRef.current, stateRef.current as S, new Date())
+      void flushEvents(session.name)
       notify('submitted')
       return true
     })

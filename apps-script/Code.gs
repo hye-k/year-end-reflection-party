@@ -1,3 +1,4 @@
+// The `events` tab is an append-only usage log (ts, name, form, event, quest, answered, chars). Delete the whole tab to reset it.
 // The player list is not in the code: it is the `names` tab of the sheet (one name per row in column A, header in row 1).
 // Add or remove rows there to change who can write; no redeploy needed. Do not rename a player, records are keyed by name.
 const NAMES_SHEET = 'names';
@@ -7,6 +8,8 @@ const DRAFT_HEADER = ['key', 'name', 'form', 'savedAt', 'json'];
 const MAX_CELL_CHARS = 2000;
 const MAX_ROW_CELLS = 100;
 const MAX_DRAFT_CHARS = 45000;
+const EVENTS_SHEET = 'events';
+const MAX_EVENT_ROWS = 100; // keep in step with EVENT_BATCH_SIZE in app/src/data/eventLog.ts
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
@@ -29,6 +32,7 @@ function doPost(e) {
       case 'submit': return json(appendSubmission(requireName(body.name), requireForm(body.form), body.header, body.row));
       case 'saveDraft': return json(upsertDraft(requireName(body.name), requireForm(body.form), body.savedAt, body.json));
       case 'deleteDraft': return json(removeDraft(requireName(body.name), requireForm(body.form)));
+      case 'logEvents': return json(appendEvents(requireName(body.name), body.header, body.rows));
       default: return json({ ok: false, error: 'unknown action' });
     }
   } catch (err) {
@@ -96,6 +100,25 @@ function appendSubmission(name, form, header, row) {
     const sheet = sheetFor(form, head);
     sheet.appendRow(cells);
     return { ok: true, row: sheet.getLastRow() };
+  });
+}
+
+function appendEvents(name, header, rows) {
+  if (!Array.isArray(header) || header.length === 0 || header.length > MAX_ROW_CELLS) throw new Error('bad header');
+  if (!Array.isArray(rows) || rows.length === 0 || rows.length > MAX_EVENT_ROWS) throw new Error('bad rows');
+  rows.forEach(function (row) {
+    if (!Array.isArray(row) || row.length !== header.length) throw new Error('header/row mismatch');
+    if (row[1] !== name) throw new Error('name mismatch');
+    requireForm(row[2]);
+  });
+  const head = header.map(cleanCell);
+  const cells = rows.map(function (row) { return row.map(cleanCell); });
+  return withLock(function () {
+    const sheet = sheetFor(EVENTS_SHEET, head);
+    const start = sheet.getLastRow() + 1;
+    sheet.getRange(start, 1, cells.length, 1).setNumberFormat('@'); // keep ts as the ISO text, like the other tabs
+    sheet.getRange(start, 1, cells.length, head.length).setValues(cells);
+    return { ok: true, count: cells.length };
   });
 }
 

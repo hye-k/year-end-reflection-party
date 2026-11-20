@@ -11,7 +11,7 @@ const tourSeenKey = (tour: TourId) => `${KEY_PREFIX}tourSeen:${tour}`
 
 const draftKey = (name: string, form: FormId) => `${KEY_PREFIX}draft:${form}:${name}`
 
-function browserStorage(): StorageLike | null {
+export function browserStorage(): StorageLike | null {
   try {
     return window.localStorage
   } catch {

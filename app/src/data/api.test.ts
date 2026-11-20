@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { makeEvent } from '../core/events'
 import { createDraft } from '../core/serialize'
 import { createApi, type FetchLike } from './api'
 
@@ -24,6 +25,26 @@ afterEach(() => {
 })
 
 describe('api', () => {
+  it('posts a batch of events with keepalive so a closing tab can still send them', async () => {
+    const fetchImpl = vi.fn<FetchLike>(async () => jsonResponse({ ok: true, count: 1 }))
+    const event = makeEvent('open', 'a', 'reflection', { answered: 1, chars: 4 }, new Date('2026-11-14T00:00:00.000Z'))
+    expect(await apiWith(fetchImpl).logEvents('a', [event])).toEqual({ ok: true })
+    const init = fetchImpl.mock.calls[0]?.[1]
+    expect(init?.method).toBe('POST')
+    expect(init?.keepalive).toBe(true)
+    expect(JSON.parse(String(init?.body))).toEqual({
+      action: 'logEvents',
+      name: 'a',
+      header: ['ts', 'name', 'form', 'event', 'quest', 'answered', 'chars'],
+      rows: [['2026-11-14T00:00:00.000Z', 'a', 'reflection', 'open', '', '1', '4']],
+    })
+  })
+
+  it('reports a failed event log without throwing', async () => {
+    const api = apiWith(async () => jsonResponse({ ok: false, error: 'unknown name' }))
+    expect(await api.logEvents('a', [])).toEqual({ ok: false, error: 'unknown name' })
+  })
+
   it('returns not-configured without calling fetch when there is no url', async () => {
     const fetchImpl = vi.fn<FetchLike>()
     const api = createApi({ url: undefined, fetch: fetchImpl })
