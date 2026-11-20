@@ -57,25 +57,29 @@ export interface ContentTexts {
   quests: Record<string, QuestText>
 }
 
-const SHORT = 100
-const LONG = 300
+// Character limits (user-perceived characters). The server caps a sheet cell at 2000 (MAX_CELL_CHARS in apps-script/Code.gs).
+// Text answers at or under SHORT_ANSWER_MAX start as a compact field; longer ones fill the panel (see ui/QuestInput.tsx).
+export const SHORT_ANSWER_MAX = 200
+export const LONG_ANSWER_MAX = 1000
+export const SHORT_SLOT_MAX = 80
+export const LONG_SLOT_MAX = 200
 
 const text = (maxLength: number): InputStructure => ({ kind: 'text', maxLength })
 
 export const QUEST_STRUCTURES: readonly QuestStructure[] = [
-  { id: 'warmup-food', section: 'warmup', required: true, input: text(SHORT) },
-  { id: 'warmup-song', section: 'warmup', required: true, input: text(SHORT) },
-  { id: 'warmup-purchase', section: 'warmup', required: true, input: text(SHORT) },
-  { id: 'warmup-photo', section: 'warmup', required: true, input: text(SHORT) },
-  { id: 'thanks', section: 'people', required: true, input: text(LONG) },
-  { id: 'first-tries', section: 'attempts', required: true, input: { kind: 'slots', slotCount: 5, slotMaxLength: 40, columns: 2 } },
-  { id: 'glad-i-did', section: 'attempts', required: true, input: { kind: 'slots', slotCount: 5, slotMaxLength: 40, columns: 2 } },
-  { id: 'let-go', section: 'attempts', required: true, input: text(LONG) },
-  { id: 'courage', section: 'attempts', required: true, input: text(LONG) },
-  { id: 'new-self', section: 'self', required: true, input: text(LONG) },
-  { id: 'brag', section: 'brag', required: true, input: { kind: 'slots', slotCount: 5, slotMaxLength: 100, columns: 1 } },
-  { id: 'to-past-self', section: 'finish', required: true, input: text(LONG) },
-  { id: 'year-sentence', section: 'finish', required: true, input: text(SHORT) },
+  { id: 'warmup-food', section: 'warmup', required: true, input: text(SHORT_ANSWER_MAX) },
+  { id: 'warmup-song', section: 'warmup', required: true, input: text(SHORT_ANSWER_MAX) },
+  { id: 'warmup-purchase', section: 'warmup', required: true, input: text(SHORT_ANSWER_MAX) },
+  { id: 'warmup-photo', section: 'warmup', required: true, input: text(SHORT_ANSWER_MAX) },
+  { id: 'thanks', section: 'people', required: true, input: text(LONG_ANSWER_MAX) },
+  { id: 'first-tries', section: 'attempts', required: true, input: { kind: 'slots', slotCount: 5, slotMaxLength: SHORT_SLOT_MAX, columns: 2 } },
+  { id: 'glad-i-did', section: 'attempts', required: true, input: { kind: 'slots', slotCount: 5, slotMaxLength: SHORT_SLOT_MAX, columns: 2 } },
+  { id: 'let-go', section: 'attempts', required: true, input: text(LONG_ANSWER_MAX) },
+  { id: 'courage', section: 'attempts', required: true, input: text(LONG_ANSWER_MAX) },
+  { id: 'new-self', section: 'self', required: true, input: text(LONG_ANSWER_MAX) },
+  { id: 'brag', section: 'brag', required: true, input: { kind: 'slots', slotCount: 5, slotMaxLength: LONG_SLOT_MAX, columns: 1 } },
+  { id: 'to-past-self', section: 'finish', required: true, input: text(LONG_ANSWER_MAX) },
+  { id: 'year-sentence', section: 'finish', required: true, input: text(SHORT_ANSWER_MAX) },
 ]
 
 export const MAX_DEPTH_M = 40

@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef } from 'react'
 import type { CSSProperties, KeyboardEvent } from 'react'
 import type { Answer } from '../core/reflection'
 import { clampGraphemes, graphemeLength } from '../core/text'
-import { NAME_TOKEN, type Quest } from '../core/content'
+import { NAME_TOKEN, SHORT_ANSWER_MAX, type Quest } from '../core/content'
 
 interface QuestInputProps {
   quest: Quest
@@ -18,7 +18,6 @@ type Field = HTMLInputElement | HTMLTextAreaElement
 
 // The counter only appears once the writer is close to the limit; before that the placeholder states it.
 const COUNTER_FROM = 0.8
-const SHORT_ANSWER_MAX = 100
 // On a phone the soft keyboard takes half the screen, so the field scrolls earlier than the desktop panel would force it to.
 const MOBILE_MAX_FIELD_HEIGHT = 220
 
